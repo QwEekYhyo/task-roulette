@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    MQTTClient_disconnect(client, 10000);
+    MQTTClient_disconnect(client, TIMEOUT);
     MQTTClient_destroy(&client);
     return rc;
 }

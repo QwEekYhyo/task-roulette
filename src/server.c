@@ -52,8 +52,6 @@ void send_kill_instructions() {
     payload[1] = rand() % 256;
     pubmsg.payload = payload;
     pubmsg.payloadlen = 2;
-    pubmsg.qos = QOS;
-    pubmsg.retained = 0;
     MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
 }
 
@@ -102,20 +100,21 @@ void connection_lost(void* context, char* cause) {
 }
 
 int main(int argc, char* argv[]) {
+    /* Initialize MQTT client */
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    int rc;
     MQTTClient_create(&client, BROKER_ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
-
     MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, NULL);
+
+    int rc;
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
         exit(EXIT_FAILURE);
     }
-    printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
+    printf("Subscribing to topic %s\nfor client %s\n\n"
            "Press Q<Enter> to quit\n\n",
-           TOPIC, CLIENTID, QOS);
+           TOPIC, CLIENTID);
     MQTTClient_subscribe(client, TOPIC, QOS);
 
     int ch;
@@ -124,7 +123,7 @@ int main(int argc, char* argv[]) {
         if (ch == 'Q' || ch == 'q') break;
     }
 
-    MQTTClient_disconnect(client, 10000);
+    MQTTClient_disconnect(client, TIMEOUT);
     MQTTClient_destroy(&client);
 
     free_players(players);
