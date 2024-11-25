@@ -17,7 +17,7 @@
 MQTTClient client;
 MQTTClient_message pubmsg = MQTTClient_message_initializer;
 const uint8_t PAYLOAD_LENGTH = 101;
-char payload[] = "-QwEekYhyo";
+char payload[] = "-MrGaming";
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
@@ -78,15 +78,17 @@ int main(int argc, char* argv[]) {
     MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
     MQTTClient_subscribe(client, TOPIC, QOS);
     printf("Joined game!\n");
-
-    payload[0] = 5;
-    pubmsg.payload = payload;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
+    printf("Press [X] to play a turn\n");
 
     int ch;
     while (1) {
         ch = getchar();
         if (ch == 'Q' || ch == 'q') break;
+        else if (ch == 'X' || ch == 'x') {
+            payload[0] = 5;
+            pubmsg.payload = payload;
+            MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
+        }
     }
 
     MQTTClient_disconnect(client, 10000);
