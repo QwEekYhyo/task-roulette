@@ -29,12 +29,20 @@ Player* find_player(Player* head, const char* name) {
     return NULL;
 }
 
-void update_player_status(Player* head, const char* name, int new_status) {
-    Player* player = find_player(head, name);
-    if (player != NULL) {
-        player->is_alive = new_status;
-    } else {
-        printf("Player %s not found.\n", name);
+uint8_t everyone_survived(Player* head) {
+    while (head != NULL) {
+        if (head->is_alive == 0)
+            return 0;
+        head = head->next;
+    }
+    return 1;
+}
+
+void kill_players(Player* head) {
+    while (head != NULL) {
+        if (head->is_alive == 1)
+            head->is_alive = 0;
+        head = head->next;
     }
 }
 
@@ -50,7 +58,7 @@ void free_players(Player* head) {
 // This is only for debug purposes
 void display_players(Player* head) {
     while (head != NULL) {
-        printf("Name: %s, Status: %s\n", head->name, head->is_alive ? "Alive" : "Dead");
+        printf("Name: %s, Status: %s\n", head->name, head->is_alive == 1 ? "Alive" : "Dead");
         head = head->next;
     }
 }

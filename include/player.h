@@ -17,7 +17,9 @@ void add_player(Player** head, const char* name);
 
 Player* find_player(Player* head, const char* name);
 
-void update_player_status(Player* head, const char* name, int new_status);
+uint8_t everyone_survived(Player* head);
+
+void kill_players(Player* head);
 
 void free_players(Player* head);
 

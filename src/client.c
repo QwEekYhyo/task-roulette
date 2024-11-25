@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define BROKER_ADDRESS "tcp://localhost:1883"
 #define TOPIC "GameEvents"
@@ -61,10 +62,18 @@ int main(int argc, char* argv[]) {
     pubmsg.payloadlen = PAYLOAD_LENGTH;
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
+    printf("Joining game...\n");
     MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
-    printf("Waiting for publication of %s\n"
-           "on topic %s for client with ClientID: %s\n",
-           payload, TOPIC, client_id);
+    printf("Joined game!\n");
+
+    payload[0] = 5;
+    pubmsg.payload = payload;
+    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
+
+    sleep(1);
+    payload[0] = 25;
+    pubmsg.payload = payload;
+    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
 
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);

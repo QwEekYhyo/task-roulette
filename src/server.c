@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <threads.h>
 
 #define BROKER_ADDRESS "tcp://localhost:1883"
 #define CLIENTID "TaskRouletteServer"
@@ -14,14 +15,56 @@
 
 // I don't know what will happen when multiple threads are going to try to add players to this list
 Player* players = NULL;
+volatile uint8_t is_turn_playing = 0;
+thrd_t death_checker_thread;
+
+int check_deaths(void* arg) {
+    thrd_sleep(&(struct timespec){.tv_sec=3}, NULL);
+    if (!is_turn_playing) return 1;
+
+    Player* current_player = (Player*) arg;
+    while (current_player != NULL) {
+        if (current_player->is_alive == 0) {
+            // publish something in GameEvents
+            printf("%s died.\n", current_player->name);
+            current_player->is_alive = 2;
+        }
+        current_player = current_player->next;
+    }
+    return 0;
+}
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
-    if (*payloadptr == 1) {
-        printf("Someone asked to join the game\n");
-        add_player(&players, ++payloadptr);
-        printf("New player list:\n");
-        display_players(players);
+    switch (*payloadptr) {
+        case 1:
+            printf("Someone asked to join the game\n");
+            add_player(&players, ++payloadptr);
+            printf("New player list:\n");
+            display_players(players);
+            putchar('\n');
+            break;
+        case 5:
+            if (is_turn_playing) return 1;
+            is_turn_playing = 1;
+            printf("Someone asked to play a turn\n");
+            kill_players(players);
+
+            thrd_create(&death_checker_thread, check_deaths, players);
+            break;
+        case 25:
+            if (!is_turn_playing) return 1;
+            printf("Someone updated its status\n");
+
+            Player* player = find_player(players, ++payloadptr);
+            if (!player) return 1;
+            player->is_alive = 1;
+
+            if (everyone_survived(players)) {
+                is_turn_playing = 0;
+                printf("Everyone survived this turn!\n");
+            }
+            break;
     }
 
     MQTTClient_freeMessage(&message);
