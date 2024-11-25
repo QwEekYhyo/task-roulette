@@ -10,16 +10,14 @@
 #define TIMEOUT 10000L
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
-    int i;
-    char* payloadptr;
     printf("Message arrived\n");
     printf("     topic: %s\n", topicName);
-    printf("   message: ");
-    payloadptr = message->payload;
-    for (i = 0; i < message->payloadlen; i++) {
-        putchar(*payloadptr++);
+
+    unsigned char* payloadptr = message->payload;
+    if (*payloadptr == 1) {
+        printf("Someone asked to create a player\n");
     }
-    putchar('\n');
+
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
     return 1;

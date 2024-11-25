@@ -1,4 +1,5 @@
 #include "MQTTClient.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,20 +7,16 @@
 #define ADDRESS "tcp://localhost:1883"
 #define CLIENTID "TaskRouletteClient"
 #define TOPIC "game/request"
-#define PAYLOAD "Hello World!"
 #define QOS 1
 #define TIMEOUT 10000L
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
-    int i;
-    char* payloadptr;
-
     printf("Message arrived\n");
     printf("     topic: %s\n", topicName);
     printf("   message: ");
 
-    payloadptr = message->payload;
-    for (i = 0; i < message->payloadlen; i++) {
+    char* payloadptr = message->payload;
+    for (int i = 0; i < message->payloadlen; i++) {
         putchar(*payloadptr++);
     }
     putchar('\n');
@@ -50,14 +47,17 @@ int main(int argc, char* argv[]) {
     }
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    pubmsg.payload = PAYLOAD;
-    pubmsg.payloadlen = strlen(PAYLOAD);
+    static const uint8_t PAYLOAD_LENGTH = 10;
+    unsigned char payload[10];
+    payload[0] = 1;
+    pubmsg.payload = payload;
+    pubmsg.payloadlen = PAYLOAD_LENGTH;
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
     MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
     printf("Waiting for publication of %s\n"
            "on topic %s for client with ClientID: %s\n",
-           PAYLOAD, TOPIC, CLIENTID);
+           payload, TOPIC, CLIENTID);
 
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
