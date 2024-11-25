@@ -1,21 +1,22 @@
 #include "MQTTClient.h"
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define ADDRESS "tcp://localhost:1883"
+#define BROKER_ADDRESS "tcp://localhost:1883"
 #define CLIENTID "TaskRouletteServer"
-#define TOPIC "game/request"
+#define TOPIC "GameEvents"
 #define QOS 1
 #define TIMEOUT 10000L
 
-int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
-    printf("Message arrived\n");
-    printf("     topic: %s\n", topicName);
+volatile Player* players = NULL;
 
+int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     unsigned char* payloadptr = message->payload;
     if (*payloadptr == 1) {
-        printf("Someone asked to create a player\n");
+        printf("Someone asked to join the game\n");
+        
     }
 
     MQTTClient_freeMessage(&message);
@@ -32,9 +33,10 @@ int main(int argc, char* argv[]) {
     MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     int rc;
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTClient_create(&client, BROKER_ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
+
     MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, NULL);
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
