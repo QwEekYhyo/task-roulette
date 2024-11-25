@@ -26,7 +26,15 @@ int check_deaths(void* arg) {
     Player* current_player = (Player*) arg;
     while (current_player != NULL) {
         if (current_player->is_alive == 0) {
-            // publish something in GameEvents
+            /* === Alert clients that someone died === */
+            MQTTClient_message pubmsg = MQTTClient_message_initializer;
+            char payload[101];
+            strncpy(payload + 1, current_player->name, 100);
+            payload[0] = 105;
+            pubmsg.payload = payload;
+            pubmsg.payloadlen = 101;
+            MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
+            /* === === */
             printf("%s died.\n", current_player->name);
             current_player->is_alive = 2;
         }

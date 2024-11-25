@@ -17,7 +17,7 @@
 MQTTClient client;
 MQTTClient_message pubmsg = MQTTClient_message_initializer;
 const uint8_t PAYLOAD_LENGTH = 101;
-char payload[] = "-MrGaming";
+char payload[] = "-QwEekYhyo";
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
@@ -37,7 +37,8 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
         payload[0] = 25;
         pubmsg.payload = payload;
         MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
-    }
+    } else if (*payloadptr == 105)
+        printf("Player %s died.\n", payloadptr + 1);
 
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
