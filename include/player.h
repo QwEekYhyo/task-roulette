@@ -21,4 +21,6 @@ void update_player_status(Player* head, const char* name, int new_status);
 
 void free_players(Player* head);
 
+void display_players(Player* head);
+
 #endif

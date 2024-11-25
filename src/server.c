@@ -1,3 +1,5 @@
+#include <player.h>
+
 #include "MQTTClient.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -10,13 +12,16 @@
 #define QOS 1
 #define TIMEOUT 10000L
 
-volatile Player* players = NULL;
+// I don't know what will happen when multiple threads are going to try to add players to this list
+Player* players = NULL;
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
-    unsigned char* payloadptr = message->payload;
+    char* payloadptr = message->payload;
     if (*payloadptr == 1) {
         printf("Someone asked to join the game\n");
-        
+        add_player(&players, ++payloadptr);
+        printf("New player list:\n");
+        display_players(players);
     }
 
     MQTTClient_freeMessage(&message);
@@ -55,6 +60,8 @@ int main(int argc, char* argv[]) {
 
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
+
+    free_players(players);
 
     return rc;
 }

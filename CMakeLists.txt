@@ -10,7 +10,7 @@ set(COMMON_SOURCES src/utils.c)
 include_directories(include)
 
 add_executable(task-roulette-client src/client.c ${COMMON_SOURCES})
-add_executable(task-roulette-server src/server.c ${COMMON_SOURCES})
+add_executable(task-roulette-server src/server.c ${COMMON_SOURCES} src/player.c)
 
 target_link_libraries(task-roulette-client PRIVATE paho-mqtt3c)
 target_link_libraries(task-roulette-server PRIVATE paho-mqtt3c)

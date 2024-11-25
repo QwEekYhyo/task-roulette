@@ -14,7 +14,7 @@ Player* create_player(const char* name, int is_alive) {
 }
 
 void add_player(Player** head, const char* name) {
-    Player* newPlayer = create_player(name, 0);
+    Player* newPlayer = create_player(name, 1);
     newPlayer->next = *head;
     *head = newPlayer;
 }
@@ -44,5 +44,13 @@ void free_players(Player* head) {
         tmp = head;
         head = head->next;
         free(tmp);
+    }
+}
+
+// This is only for debug purposes
+void display_players(Player* head) {
+    while (head != NULL) {
+        printf("Name: %s, Status: %s\n", head->name, head->is_alive ? "Alive" : "Dead");
+        head = head->next;
     }
 }

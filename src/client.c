@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ADDRESS "tcp://localhost:1883"
-#define TOPIC "game/request"
+#define BROKER_ADDRESS "tcp://localhost:1883"
+#define TOPIC "GameEvents"
 #define QOS 1
 #define TIMEOUT 10000L
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_deliveryToken token;
-    MQTTClient_create(&client, ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTClient_create(&client, BROKER_ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, NULL);
@@ -54,8 +54,8 @@ int main(int argc, char* argv[]) {
     }
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    static const uint8_t PAYLOAD_LENGTH = 10;
-    unsigned char payload[10];
+    static const uint8_t PAYLOAD_LENGTH = 101;
+    char payload[] = "-QwEekYhyo";
     payload[0] = 1;
     pubmsg.payload = payload;
     pubmsg.payloadlen = PAYLOAD_LENGTH;
