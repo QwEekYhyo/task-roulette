@@ -13,6 +13,7 @@
 #define QOS 1
 #define TIMEOUT 10000L
 
+MQTTClient client;
 // I don't know what will happen when multiple threads are going to try to add players to this list
 Player* players = NULL;
 volatile uint8_t is_turn_playing = 0;
@@ -31,7 +32,21 @@ int check_deaths(void* arg) {
         }
         current_player = current_player->next;
     }
+    is_turn_playing = 0;
     return 0;
+}
+
+void send_kill_instructions() {
+    srand(time(NULL));
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    char payload[2];
+    payload[0] = 100;
+    payload[1] = rand() % 256;
+    pubmsg.payload = payload;
+    pubmsg.payloadlen = 2;
+    pubmsg.qos = QOS;
+    pubmsg.retained = 0;
+    MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
 }
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
@@ -50,6 +65,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
             printf("Someone asked to play a turn\n");
             kill_players(players);
 
+            send_kill_instructions();
             thrd_create(&death_checker_thread, check_deaths, players);
             break;
         case 25:
@@ -78,7 +94,6 @@ void connection_lost(void* context, char* cause) {
 }
 
 int main(int argc, char* argv[]) {
-    MQTTClient client;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     int rc;
     MQTTClient_create(&client, BROKER_ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);

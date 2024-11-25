@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <utils.h>
 
 #include "MQTTClient.h"
@@ -13,16 +14,31 @@
 #define QOS 1
 #define TIMEOUT 10000L
 
-int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
-    printf("Message arrived\n");
-    printf("     topic: %s\n", topicName);
-    printf("   message: ");
+MQTTClient client;
+MQTTClient_message pubmsg = MQTTClient_message_initializer;
+const uint8_t PAYLOAD_LENGTH = 101;
+char payload[] = "-MrGaming";
 
+int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
-    for (int i = 0; i < message->payloadlen; i++) {
-        putchar(*payloadptr++);
+
+    if (*payloadptr == 100) {
+        printf("Server is going to kill one process...\n");
+        printf("Prepare to DIE!\n");
+
+        pid_t pid = (uint8_t) *(payloadptr + 1);
+        printf("Process %d is about to get killed\n", pid);
+        if (kill(pid, SIGINT) == 0) {
+            printf("SIGINT sent to process %d successfully.\n", pid);
+        } else {
+            perror("Failed to send SIGINT");
+        }
+
+        payload[0] = 25;
+        pubmsg.payload = payload;
+        MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
     }
-    putchar('\n');
+
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
 
@@ -37,12 +53,10 @@ void connection_lost(void* context, char* cause) {
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
-    MQTTClient client;
     char client_id[UUID_STR_LEN];
     generate_uuid(client_id);
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    MQTTClient_deliveryToken token;
     MQTTClient_create(&client, BROKER_ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
@@ -54,26 +68,25 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    static const uint8_t PAYLOAD_LENGTH = 101;
-    char payload[] = "-QwEekYhyo";
     payload[0] = 1;
     pubmsg.payload = payload;
     pubmsg.payloadlen = PAYLOAD_LENGTH;
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
     printf("Joining game...\n");
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
+    MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
+    MQTTClient_subscribe(client, TOPIC, QOS);
     printf("Joined game!\n");
 
     payload[0] = 5;
     pubmsg.payload = payload;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
+    MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
 
-    sleep(1);
-    payload[0] = 25;
-    pubmsg.payload = payload;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
+    int ch;
+    while (1) {
+        ch = getchar();
+        if (ch == 'Q' || ch == 'q') break;
+    }
 
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
