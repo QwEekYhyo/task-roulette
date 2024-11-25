@@ -1,11 +1,13 @@
+#include <utils.h>
+
 #include "MQTTClient.h"
+#include <time.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define ADDRESS "tcp://localhost:1883"
-#define CLIENTID "TaskRouletteClient"
 #define TOPIC "game/request"
 #define QOS 1
 #define TIMEOUT 10000L
@@ -32,10 +34,15 @@ void connection_lost(void* context, char* cause) {
 }
 
 int main(int argc, char* argv[]) {
+    srand(time(NULL));
+
     MQTTClient client;
+    char client_id[UUID_STR_LEN];
+    generate_uuid(client_id);
+
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_deliveryToken token;
-    MQTTClient_create(&client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTClient_create(&client, ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, NULL);
@@ -57,7 +64,7 @@ int main(int argc, char* argv[]) {
     MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
     printf("Waiting for publication of %s\n"
            "on topic %s for client with ClientID: %s\n",
-           payload, TOPIC, CLIENTID);
+           payload, TOPIC, client_id);
 
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
