@@ -39,7 +39,7 @@ void send_kill_instructions() {
     srand(time(NULL));
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     char payload[2];
-    payload[0] = 100;
+    payload[0] = KILL_PROCESS_EVENT;
     payload[1] = rand() % 256;
     pubmsg.payload = payload;
     pubmsg.payloadlen = 2;
@@ -49,14 +49,14 @@ void send_kill_instructions() {
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
     switch (*payloadptr) {
-        case 1:
+        case PLAYER_JOIN_EVENT:
             printf("Someone asked to join the game\n");
             add_player(&players, ++payloadptr);
             printf("New player list:\n");
             display_players(players);
             putchar('\n');
             break;
-        case 5:
+        case START_TURN_EVENT:
             if (is_turn_playing) return 1;
             is_turn_playing = 1;
             printf("Someone asked to play a turn\n");
@@ -65,7 +65,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
             send_kill_instructions();
             thrd_create(&death_checker_thread, check_deaths, players);
             break;
-        case 25:
+        case UPDATE_STATUS_EVENT:
             if (!is_turn_playing) return 1;
             printf("Someone updated its status\n");
 

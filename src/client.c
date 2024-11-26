@@ -20,7 +20,7 @@ char payload[] = "-MrGaming";
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
 
-    if (*payloadptr == 100) {
+    if (*payloadptr == KILL_PROCESS_EVENT) {
         printf("Server is going to kill one process...\n");
         printf("Prepare to DIE!\n");
 
@@ -32,10 +32,10 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
             perror("Failed to send SIGINT");
         }
 
-        payload[0] = 25;
+        payload[0] = UPDATE_STATUS_EVENT;
         pubmsg.payload = payload;
         MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
-    } else if (*payloadptr == 105)
+    } else if (*payloadptr == PLAYER_DIED_EVENT)
         printf("Player %s died.\n", payloadptr + 1);
 
     MQTTClient_freeMessage(&message);
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     }
     printf("Connected!\n");
 
-    payload[0] = 1;
+    payload[0] = PLAYER_JOIN_EVENT;
     pubmsg.payload = payload;
     pubmsg.payloadlen = PAYLOAD_LENGTH;
     pubmsg.qos = QOS;
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
         ch = getchar();
         if (ch == 'Q' || ch == 'q') break;
         else if (ch == 'X' || ch == 'x') {
-            payload[0] = 5;
+            payload[0] = START_TURN_EVENT;
             pubmsg.payload = payload;
             MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
         }
