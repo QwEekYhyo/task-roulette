@@ -1,18 +1,16 @@
-#include <signal.h>
+#include <common_defs.h>
 #include <utils.h>
 
 #include "MQTTClient.h"
 #include <time.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#define BROKER_ADDRESS "tcp://localhost:1883"
-#define TOPIC "GameEvents"
-#define QOS 1
-#define TIMEOUT 10000L
+#define BROKER_ADDRESS "tcp://127.0.0.1:1883"
 
 MQTTClient client;
 MQTTClient_message pubmsg = MQTTClient_message_initializer;
@@ -54,8 +52,18 @@ void connection_lost(void* context, char* cause) {
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
-    char client_id[UUID_STR_LEN];
+    /*
+     * Ok so the three lines of code below need some explanation
+     * When I switched UUID_STR_LEN to static const uint8_t instead of a pre processor macro (#define)
+     * the client ID now had EXTRA weird characters at the end
+     * Like it had the usual 24 hex characters PLUS some unreadable characters
+     * I have no idea why this is happening, it might be to the fact that static variables are initialized
+     * somewhere else in memory so maybe this buffer is initialized in a weird way
+     * I am thus adding \0 to specifically end the string after the 24 hex characters
+     */
+    char client_id[UUID_STR_LEN + 1];
     generate_uuid(client_id);
+    client_id[UUID_STR_LEN] = '\0';
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_create(&client, BROKER_ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
@@ -63,11 +71,13 @@ int main(int argc, char* argv[]) {
     conn_opts.cleansession = 1;
     MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, NULL);
 
+    printf("Connecting to server...\n");
     int rc;
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
         exit(EXIT_FAILURE);
     }
+    printf("Connected!\n");
 
     payload[0] = 1;
     pubmsg.payload = payload;

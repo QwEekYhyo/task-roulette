@@ -1,7 +1,9 @@
 #ifndef TROULETTE_UTILS_H
 #define TROULETTE_UTILS_H
 
-#define UUID_STR_LEN 24
+#include <stdint.h>
+
+static const uint8_t UUID_STR_LEN = 24;
 
 extern const char HEX_CHARS[];
 
