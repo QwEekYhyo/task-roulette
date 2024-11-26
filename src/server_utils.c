@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 
 void player_died_alert(MQTTClient* client, const char* player_name) {
@@ -27,7 +28,10 @@ void no_player_died_alert(MQTTClient* client) {
 }
 
 void send_kill_instructions(MQTTClient* client) {
-    srand(time(NULL));
+    struct timeval tm;
+    gettimeofday(&tm, NULL);
+    srandom(tm.tv_sec + tm.tv_usec * 1000000ul);
+
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     char payload[2];
     payload[0] = KILL_PROCESS_EVENT;
