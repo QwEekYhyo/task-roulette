@@ -10,8 +10,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BROKER_ADDRESS "tcp://127.0.0.1:1883"
-
 MQTTClient client;
 MQTTClient_message pubmsg = MQTTClient_message_initializer;
 
@@ -52,7 +50,13 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
     return 1;
 }
 
-int main(void) {
+int main(int argc, char* argv[]) {
+    argc--, argv++;
+    if (!argc) {
+        printf("Usage: task-roulette <server_ip>\n");
+        return 1;
+    }
+
     printf("Enter a username: ");
     fgets(payload + 1, PAYLOAD_LENGTH - 1, stdin);
     // Remove \n character introduced by fgets
@@ -78,7 +82,7 @@ int main(void) {
     client_id[UUID_STR_LEN] = '\0';
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    MQTTClient_create(&client, BROKER_ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTClient_create(&client, *argv, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     MQTTClient_setCallbacks(client, NULL, connection_lost, message_arrived, NULL);
