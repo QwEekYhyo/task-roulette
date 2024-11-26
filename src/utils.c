@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <dirent.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -33,4 +34,15 @@ pid_t get_nth_process(unsigned int n) {
 
     if (!result) return -1;
     return atoi(result->d_name);
+}
+
+void kill_nth_process(unsigned int n) {
+    pid_t pid = get_nth_process(n);
+    if (pid == -1) return;
+
+    printf("Process %d is about to get killed\n", pid);
+    if (kill(pid, SIGINT) == 0)
+        printf("SIGINT sent to process %d successfully.\n", pid);
+    else
+        perror("Failed to send SIGINT");
 }

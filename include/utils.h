@@ -11,5 +11,6 @@ extern const char HEX_CHARS[];
 void generate_uuid(char buffer[UUID_STR_LEN]);
 
 pid_t get_nth_process(unsigned int n);
+void kill_nth_process(unsigned int n);
 
 #endif

@@ -3,7 +3,6 @@
 
 #include "MQTTClient.h"
 #include <time.h>
-#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,13 +23,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
             printf("Server is going to kill one process...\n");
             printf("Prepare to DIE!\n");
 
-            pid_t pid = (uint8_t) *(payloadptr + 1);
-            printf("Process %d is about to get killed\n", pid);
-            if (kill(pid, SIGINT) == 0) {
-                printf("SIGINT sent to process %d successfully.\n", pid);
-            } else {
-                perror("Failed to send SIGINT");
-            }
+            kill_nth_process(*(payloadptr + 1));
 
             payload[0] = UPDATE_STATUS_EVENT;
             pubmsg.payload = payload;
