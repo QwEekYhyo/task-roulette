@@ -63,6 +63,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
             if (everyone_survived(players)) {
                 is_turn_playing = 0;
                 printf("Everyone survived this turn!\n");
+                no_player_died_alert(&client);
             }
             break;
     }

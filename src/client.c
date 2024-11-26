@@ -20,23 +20,30 @@ char payload[] = "-MrGaming";
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
 
-    if (*payloadptr == KILL_PROCESS_EVENT) {
-        printf("Server is going to kill one process...\n");
-        printf("Prepare to DIE!\n");
+    switch (*payloadptr) {
+        case KILL_PROCESS_EVENT:
+            printf("Server is going to kill one process...\n");
+            printf("Prepare to DIE!\n");
 
-        pid_t pid = (uint8_t) *(payloadptr + 1);
-        printf("Process %d is about to get killed\n", pid);
-        if (kill(pid, SIGINT) == 0) {
-            printf("SIGINT sent to process %d successfully.\n", pid);
-        } else {
-            perror("Failed to send SIGINT");
-        }
+            pid_t pid = (uint8_t) *(payloadptr + 1);
+            printf("Process %d is about to get killed\n", pid);
+            if (kill(pid, SIGINT) == 0) {
+                printf("SIGINT sent to process %d successfully.\n", pid);
+            } else {
+                perror("Failed to send SIGINT");
+            }
 
-        payload[0] = UPDATE_STATUS_EVENT;
-        pubmsg.payload = payload;
-        MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
-    } else if (*payloadptr == PLAYER_DIED_EVENT)
-        printf("Player %s died.\n", payloadptr + 1);
+            payload[0] = UPDATE_STATUS_EVENT;
+            pubmsg.payload = payload;
+            MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
+            break;
+        case PLAYER_DIED_EVENT:
+            printf("Player %s died.\n", payloadptr + 1);
+            break;
+        case NO_PLAYER_DIED_EVENT:
+            printf("Everyone survived this turn! Hurray!\n");
+            break;
+    }
 
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);

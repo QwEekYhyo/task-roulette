@@ -13,6 +13,7 @@
 /* Events fired by the server */
 #define KILL_PROCESS_EVENT 100
 #define PLAYER_DIED_EVENT 105
+#define NO_PLAYER_DIED_EVENT 125
 
 void connection_lost(void* context, char* cause);
 

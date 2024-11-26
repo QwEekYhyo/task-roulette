@@ -16,6 +16,16 @@ void player_died_alert(MQTTClient* client, const char* player_name) {
     MQTTClient_publishMessage(*client, TOPIC, &pubmsg, NULL);
 }
 
+void no_player_died_alert(MQTTClient* client) {
+    char payload[1];
+
+    MQTTClient_message pubmsg = MQTTClient_message_initializer;
+    payload[0] = NO_PLAYER_DIED_EVENT;
+    pubmsg.payload = payload;
+    pubmsg.payloadlen = 1;
+    MQTTClient_publishMessage(*client, TOPIC, &pubmsg, NULL);
+}
+
 void send_kill_instructions(MQTTClient* client) {
     srand(time(NULL));
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
