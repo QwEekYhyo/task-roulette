@@ -73,7 +73,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
     return 1;
 }
 
-int main(int argc, char* argv[]) {
+int main(void) {
     /* Initialize MQTT client */
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_create(&client, BROKER_ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL);

@@ -51,7 +51,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
     return 1;
 }
 
-int main(int argc, char* argv[]) {
+int main(void) {
     srand(time(NULL));
 
     /*
