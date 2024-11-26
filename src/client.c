@@ -14,8 +14,9 @@
 
 MQTTClient client;
 MQTTClient_message pubmsg = MQTTClient_message_initializer;
-const uint8_t PAYLOAD_LENGTH = 101;
-char payload[] = "-MrGaming";
+
+#define PAYLOAD_LENGTH 101 // this means max username length is 99
+char payload[PAYLOAD_LENGTH];
 
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
@@ -52,8 +53,17 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
 }
 
 int main(void) {
-    srand(time(NULL));
+    printf("Enter a username: ");
+    fgets(payload + 1, PAYLOAD_LENGTH - 1, stdin);
+    // Remove \n character introduced by fgets
+    for (uint8_t i = 1; i < PAYLOAD_LENGTH; i++) {
+        if (payload[i] == '\n') {
+            payload[i] = '\0';
+            break;
+        }
+    }
 
+    srand(time(NULL));
     /*
      * Ok so the three lines of code below need some explanation
      * When I switched UUID_STR_LEN to static const uint8_t instead of a pre processor macro (#define)
