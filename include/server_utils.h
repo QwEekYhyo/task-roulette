@@ -9,4 +9,6 @@ static const uint8_t PLAYER_DEATH_PAYLOAD_LENGTH = 101;
 // Publish on topic that a player died
 void player_died_alert(MQTTClient* client, const char* player_name);
 
+void send_kill_instructions(MQTTClient* client);
+
 #endif

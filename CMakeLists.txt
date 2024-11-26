@@ -6,7 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(COMMON_SOURCES src/utils.c)
+set(COMMON_SOURCES src/utils.c src/common_defs.c)
 set(SERVER_SOURCES src/server_utils.c src/player.c)
 include_directories(include)
 

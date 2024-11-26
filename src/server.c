@@ -5,8 +5,6 @@
 #include "MQTTClient.h"
 #include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 #include <threads.h>
 
 #define BROKER_ADDRESS "tcp://localhost:1883"
@@ -35,17 +33,6 @@ int check_deaths(void* arg) {
     return 0;
 }
 
-void send_kill_instructions() {
-    srand(time(NULL));
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    char payload[2];
-    payload[0] = KILL_PROCESS_EVENT;
-    payload[1] = rand() % 256;
-    pubmsg.payload = payload;
-    pubmsg.payloadlen = 2;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, NULL);
-}
-
 int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_message* message) {
     char* payloadptr = message->payload;
     switch (*payloadptr) {
@@ -62,7 +49,7 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
             printf("Someone asked to play a turn\n");
             kill_players(players);
 
-            send_kill_instructions();
+            send_kill_instructions(&client);
             thrd_create(&death_checker_thread, check_deaths, players);
             break;
         case UPDATE_STATUS_EVENT:
@@ -85,11 +72,6 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
     return 1;
 }
 
-void connection_lost(void* context, char* cause) {
-    printf("\nConnection lost\n");
-    printf("     cause: %s\n", cause);
-}
-
 int main(int argc, char* argv[]) {
     /* Initialize MQTT client */
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -101,7 +83,7 @@ int main(int argc, char* argv[]) {
     int rc;
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
-        exit(EXIT_FAILURE);
+        return rc;
     }
     printf("Subscribing to topic %s\nfor client %s\n\n"
            "Press Q<Enter> to quit\n\n",

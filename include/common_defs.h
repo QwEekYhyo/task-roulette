@@ -14,4 +14,6 @@
 #define KILL_PROCESS_EVENT 100
 #define PLAYER_DIED_EVENT 105
 
+void connection_lost(void* context, char* cause);
+
 #endif

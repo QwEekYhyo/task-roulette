@@ -44,11 +44,6 @@ int message_arrived(void* context, char* topicName, int topicLen, MQTTClient_mes
     return 1;
 }
 
-void connection_lost(void* context, char* cause) {
-    printf("\nConnection lost\n");
-    printf("     cause: %s\n", cause);
-}
-
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
@@ -75,7 +70,7 @@ int main(int argc, char* argv[]) {
     int rc;
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
-        exit(EXIT_FAILURE);
+        return rc;
     }
     printf("Connected!\n");
 
