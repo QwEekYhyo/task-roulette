@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
      * When I switched UUID_STR_LEN to static const uint8_t instead of a pre processor macro (#define)
      * the client ID now had EXTRA weird characters at the end
      * Like it had the usual 24 hex characters PLUS some unreadable characters
-     * I have no idea why this is happening, it might be to the fact that static variables are initialized
+     * I have no idea why this is happening, it might be due to the fact that static variables are initialized
      * somewhere else in memory so maybe this buffer is initialized in a weird way
      * I am thus adding \0 to specifically end the string after the 24 hex characters
      */
